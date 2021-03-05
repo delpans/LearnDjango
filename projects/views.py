@@ -8,6 +8,7 @@ from django.views import View
 
 def index(request):
     """
+
     index视图函数
     :param request:request是HttpRequest对象，包含前端用户的所有请求信息
     :return:必须返回一个HttpResponse对象或者子对象
