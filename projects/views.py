@@ -31,10 +31,17 @@ class IndexView(View):
     index主页类视图
 
     """
+    # def get(self,request):
+    #     #get请求
+    #     # return HttpResponse("<h1>GET请求：hello，python测开大佬们</h1>")
+    #     return render(request, 'demo.html')
+
     def get(self,request):
-        #get请求
-        # return HttpResponse("<h1>GET请求：hello，python测开大佬们</h1>")
-        return render(request, 'demo.html')
+        #1、可以使用request.
+        #2、request.GET返回的是一个类字典对象，支持字典中的所有操作
+        #3、查询字符串参数中。如果有多个相同的key，使用request.GET获取的是最后一个值
+        #4、使用request.GET.geilist('name')可以获取多个相同key值的参数
+        return HttpResponse("<h1>GET请求：hello，python测开大佬们</h1>")
 
     def post(self,request):
         return HttpResponse("<h1>POST请求：hello，python测开大佬们</h1>")
