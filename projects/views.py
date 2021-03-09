@@ -29,6 +29,7 @@ def index(request):
 class IndexView(View):
     """
     index主页类视图
+
     """
     def get(self,request):
         #get请求
