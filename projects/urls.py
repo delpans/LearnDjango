@@ -2,7 +2,7 @@
 =================
 Author:delpan
 Time:2021/3/4,0004
-=================
+=================z
 """
 
 from django.urls import path
@@ -17,5 +17,11 @@ from projects import views
 urlpatterns = [
     #path('index/', index)
     #如果为类视图，path第二个参数为类视图名.as_view()
-    path('',views.IndexView.as_view())
+    path('',views.IndexView.as_view()),
+
+    #int未路径参数类型转化器
+    #：冒号左边为转化器，右边为参数别名
+    #int、slug、uuid、
+    #path('<int:pk>/',views.IndexView.as_view())
+
 ]

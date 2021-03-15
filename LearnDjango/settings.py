@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #注册子应用
     #子应用名。apps.子应用名首字母大写Config
-    'projects.apps.ProjectsConfig'
+    'projects.apps.ProjectsConfig',
+    'interfaces.apps.InterfacesConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -79,9 +81,24 @@ WSGI_APPLICATION = 'LearnDjango.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
+
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        #指定引擎
+        'ENGINE': 'django.db.backends.mysql',
+        #指定数据库名称
+        'NAME': 'my_django',
+        #数据库用户名
+        'USER':'root',
+        #数据库用户密码
+        'PASSWORD':'123456',
+        #数据库主机
+        'HOST':'localhost',
+        #数据库端口号
+        'PORT':3306,
     }
 }
 
