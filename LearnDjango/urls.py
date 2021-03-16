@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.urls import include
 
-from projects.views import index
+
 
 #全局路由配置
 #1、urlpatterns为固定名称的列表
@@ -28,5 +28,7 @@ from projects.views import index
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('projects/', include('projects.urls'))
+    #path('projects/', include('projects.urls'))
+    path('', include('projects.urls')),
+    path('api/',include('rest_framework.urls')),
 ]

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #注册子应用
     #子应用名。apps.子应用名首字母大写Config
+    'rest_framework',
     'projects.apps.ProjectsConfig',
     'interfaces.apps.InterfacesConfig',
 
