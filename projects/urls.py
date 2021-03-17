@@ -15,8 +15,7 @@ from projects import views
 # 3、能够匹配上。则执行path第二个参数指定的视图，匹配不上抛404异常
 
 
-router = DefaultRouter()
-router.register(r'projects', views.ProjectViewSet)
+
 urlpatterns = [
     # path('index/', index)
     # 如果为类视图，path第二个参数为类视图名.as_view()
@@ -30,4 +29,4 @@ urlpatterns = [
     path('projects/<int:pk>/', views.ProjectDetail.as_view()),
 ]
 
-urlpatterns += router.urls
+

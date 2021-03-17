@@ -30,5 +30,5 @@ urlpatterns = [
 
     #path('projects/', include('projects.urls'))
     path('', include('projects.urls')),
-    path('api/',include('rest_framework.urls')),
+    #path('api/',include('rest_framework.urls')),
 ]
