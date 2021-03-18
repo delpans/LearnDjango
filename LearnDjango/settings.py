@@ -41,10 +41,30 @@ INSTALLED_APPS = [
     #注册子应用
     #子应用名。apps.子应用名首字母大写Config
     'rest_framework',
+    'django_filters',
     'projects.apps.ProjectsConfig',
     'interfaces.apps.InterfacesConfig',
 
+
 ]
+
+REST_FRAMEWORK={
+    #默认响应渲染类
+    'DEFAULT_RENDERER_CLASSES':(
+        #JSON渲染器为第一优先级
+        'rest_framework.renderers.JSONRenderer',
+        #可浏览的api渲染器为第二优先级
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+    'DEFAULT_FILTER_BACKENDS':['rest_framework.filers.OrderingFilter',
+                               'django_filters.rest_framework/backends.DjangoFilterBackend'],
+    #在全局指定分页的引擎
+    #'DEFAULT_PAGINATION_CLASS':'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS':'utils.pagination.PageNumberPaginationManual',
+    #同时必须指定煤业显示的条数
+
+    #'PAGE_SIZE':3,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

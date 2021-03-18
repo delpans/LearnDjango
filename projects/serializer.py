@@ -35,24 +35,25 @@ class ProjectSerializer(serializers.Serializer):
     name = serializers.CharField(label='项目名称', max_length=200,
                                  help_text='项目名称', write_only=True,
                                  validators=[UniqueValidator(queryset=Projects.objects.all(), message='项目名不能重复'),
-                                             is_unique_project_name])
-    leader = serializers.CharField(label='负责人', max_length=50, help_text='负责人')
+                                             is_unique_project_name],
+                                 error_messages={'max_length': '长度不能超过200个字节'})
+    leader = serializers.CharField(label='负责人', max_length=50, min_length=6, help_text='负责人',
+                                   error_messages={'max_length': '长度不能超过50个字节',
+                                                   'min_length': '长度不能少于6个字节'})
     tester = serializers.CharField(label='测试人员', max_length=50, help_text='测试人员')
     programer = serializers.CharField(label='开发人员', max_length=50, help_text='开发人员')
     publish_app = serializers.CharField(label='发布应用', max_length=50, help_text='发布应用')
     # allow_null相当于模型类中的null，allow_blank相当于模型类中的blank
     desc = serializers.CharField(label='简要描述', allow_null=True, allow_blank=True, default='')
 
-
-    #单字段校验
-    #字段定义的限制（包含validators列表条目从左到右进行校验）--》单字段校验（validators_字段名）-->duo'z
-    #单字段的校验器，validate_字段名开头
+    # 单字段校验
+    # 字段定义的限制（包含validators列表条目从左到右进行校验）--》单字段校验（validators_字段名）-->duo'z
+    # 单字段的校验器，validate_字段名开头
     def validate_name(self, value):
         if not value.endwith('项目'):
             raise serializers.ValidationError('项目名称必须以"项目"结尾')
-        #当校验成功之后，一定要返回value
+        # 当校验成功之后，一定要返回value
         return value
-
 
     def validate(self, attrs):
         '''
@@ -60,15 +61,13 @@ class ProjectSerializer(serializers.Serializer):
         :param attrs:
         :return:
         '''
-        if 'icon'not in attrs['tester'] and 'icon' not in attrs['leader']:
+        if 'icon' not in attrs['tester'] and 'icon' not in attrs['leader']:
             raise serializers.ValidationError('icon必须是项目负责人或者是项目测试人员')
         return attrs
 
-
     def create(self, validated_data):
-        #project = Projects.objects.create(**validated_data)
+        # project = Projects.objects.create(**validated_data)
         return Projects.objects.create(**validated_data)
-
 
     def update(self, instance, validated_data):
         instance.name = validated_data['name']
@@ -80,3 +79,46 @@ class ProjectSerializer(serializers.Serializer):
         instance.save()
 
         return instance
+
+
+class ProjectModelSerializer(serializers.ModelSerializer):
+    # 覆盖序列化器类中的name字段
+    name = serializers.CharField(label='项目名称', max_length=200,
+                                 help_text='项目名称', write_only=True,
+                                 validators=[UniqueValidator(queryset=Projects.objects.all(), message='项目名不能重复'),
+                                             is_unique_project_name])
+
+    class Meta:
+        # 1、指定参考哪一个模型类来参考
+        model = Projects
+        # 2、指定为模型类的哪些字段，来生成序列化器
+        # fields = "__all__"
+        # fields = ('id', 'name', 'leader', 'tester', 'programer')
+        excude = ('publish_app', 'desc')
+        read_only_fields = ('leader', 'tester')
+        extra_kwargs = {
+            'leader': {
+                'write_only': True,
+                'error_messages': {'max_length': '最大长度不超过50个字节'}
+            }
+        }
+
+    # 单字段校验
+    # 字段定义的限制（包含validators列表条目从左到右进行校验）--》单字段校验（validators_字段名）-->duo'z
+    # 单字段的校验器，validate_字段名开头
+    def validate_name(self, value):
+        if not value.endwith('项目'):
+            raise serializers.ValidationError('项目名称必须以"项目"结尾')
+        # 当校验成功之后，一定要返回value
+        return value
+
+    def validate(self, attrs):
+        '''
+        多字段联合校验
+        :param attrs:
+        :return:
+        '''
+        if 'icon' not in attrs['tester'] and 'icon' not in attrs['leader']:
+            raise serializers.ValidationError('icon必须是项目负责人或者是项目测试人员')
+        return attrs
+
