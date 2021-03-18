@@ -136,6 +136,142 @@
 #         project = self.get_object(pk)
 #         project.delete()
 #         return JsonResponse(None, safe=False, status=204)
+
+
+# 注释版
+# import json
+# from django.http import HttpResponse, JsonResponse, Http404
+# from django.views import View
+# from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework import status, filters
+# from rest_framework.generics import GenericAPIView
+# from rest_framework.response import Response
+# from rest_framework.views import APIView
+#
+# from projects.serializer import ProjectSerializer, ProjectModelSerializer
+#
+# from projects.models import Projects
+# from utils.pagination import PageNumberPaginationManual
+#
+#
+# class ProjectsList(GenericAPIView):
+#     # 1、必须指定queryset和serializer_class
+#     # queryset用于指定需要使用的查询集
+#     queryset = Projects.objects.all()
+#     # 2、serializer_class指定需要使用到的序列化器类
+#     serializer_class = ProjectModelSerializer
+#
+#     # 3、、在视图类中指定过滤引擎
+#     #filter_backends = [filters.OrderingFilter]
+#     # 4、、指定需要排序的字段
+#     ordering_fields = ['name', 'leader']
+#
+#     #5、在类视图中指定过滤引擎
+#     #filter_backends = [DjangoFilterBackend]
+#
+#     #6、指定需要过滤的字段
+#     filterset_fields=['name','leader','tester']
+#
+#     #7、在某个视图中指定分页类
+#     #pagination_class = PageNumberPaginationManual
+#
+#     def get(self, request):
+#         #5、使用get_queryset获取查询集
+#         project_qs = self.get_queryset()
+#         #使用filter_queryset方法过滤查询集
+#         project_qs=self.filter_queryset(project_qs)
+#
+#         #是用paginate_queryset来进行分页，然后返回分页之后的查询集
+#         page=self.paginate_queryset(project_qs)
+#         if page is not None:
+#             serializer = self.get_serializer(instance=page, many=True)
+#             #可以get_paginated_response方法返回
+#             return self.get_paginated_response(serializer.data)
+#
+#
+#         # 如果返回的是列表数据（多条数据）时，那么需要添加many=True这个参数
+#         serializer = self.get_serializer(instance=project_qs, many=True)
+#
+#         #  JsonResponse第一个参数默认只能为dict字典,如果设为其他类型，需要将safe=False
+#         return Response(serializer.data)
+#
+#     def post(self, request):
+#         '''新增项目'''
+#         json_data = request.body.decode('utf-8')
+#         python_data = json.loads(json_data, encoding='utf-8')
+#
+#         serializer = ProjectModelSerializer(data=python_data)
+#
+#         try:
+#             serializer.is_valid(raise_exception=True)
+#         except Exception as e:
+#             return JsonResponse(serializer.errors)
+#
+#         serializer.save()
+#
+#         # 3、将模型类对象转化为字典然后返回
+#         # 序列化过程
+#
+#         return JsonResponse(serializer.data, status=201)
+#
+#
+# # 需要继承GenericAPIView基类
+# class ProjectDetail(GenericAPIView):
+#     # 2、必须指定queryset和serializer_class
+#     # queryset用于指定需要使用的查询集
+#     queryset = Projects.objects.all()
+#     # serializer_class指定需要使用到的序列化器类
+#     serializer_class = ProjectModelSerializer
+#
+#     # 使用lookup_field类属性，可以修改主路由名称
+#     # lookup_field = 'id'
+#
+#     # def get_object(self, pk):
+#     #     try:
+#     #         return Projects.objects.get(id=pk)
+#     #     except Projects.DoesNotExist:
+#     #         raise Http404
+#
+#     def get(self, request, pk):
+#
+#         # 3、无需自定义get_object方法
+#         # 使用get_object方法，返回详情视图所需的模型对象
+#         project = self.get_object()
+#         # serializer = ProjectSerializer(instance=project)
+#         # 使用get_serializer获取序列化器类
+#         serializer = self.get_serializer(instance=project)
+#         # 如果前端请求头中未指定acceept，那么默认返回josn格式数据
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#     def put(self, request, pk):
+#         # 1、校验前端传递的pk（项目id）值，类型是否正确（正整数），在数据库中是否存在
+#         # 2、获取ID为pk值的项目
+#         project = self.get_object()
+#
+#         # 3、从前端获取json格式数据
+#         json_data = request.body.decode('utf-8')
+#         python_data = json.loads(json_data, encoding='utf-8')
+#         serializer = self.get_serializer(instance=project, data=python_data)
+#         try:
+#             serializer.is_valid(raise_exception=True)
+#         except Exception as e:
+#             return Response(serializer.errors)
+#         # 4、更新项目
+#
+#         # 在创建序列化器对象时，如果同时给instance和data传参
+#         # 那么调用save（）方法，会自动化调用序列化器对象的updata方法
+#         serializer.save()
+#
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+#
+#     def delete(self, request, pk):
+#         # 1、校验前端传递的pk（项目id）值，类型是否正确（正整数），在数据库中是否存在
+#         # 2、获取ID为pk值的项目
+#         project = self.get_object()
+#         project.delete()
+#         return Response(None, safe=False, status=204)
+
+
 import json
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
@@ -144,6 +280,8 @@ from rest_framework import status, filters
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import mixins
+from rest_framework import generics
 
 from projects.serializer import ProjectSerializer, ProjectModelSerializer
 
@@ -151,119 +289,15 @@ from projects.models import Projects
 from utils.pagination import PageNumberPaginationManual
 
 
-class ProjectsList(GenericAPIView):
-    # 1、必须指定queryset和serializer_class
-    # queryset用于指定需要使用的查询集
+# 1、首先继承mixins，然后继承GenericAPIView
+class ProjectsList(generics.ListCreateAPIView):
     queryset = Projects.objects.all()
-    # 2、serializer_class指定需要使用到的序列化器类
     serializer_class = ProjectModelSerializer
 
-    # 3、、在视图类中指定过滤引擎
-    #filter_backends = [filters.OrderingFilter]
-    # 4、、指定需要排序的字段
     ordering_fields = ['name', 'leader']
-
-    #5、在类视图中指定过滤引擎
-    #filter_backends = [DjangoFilterBackend]
-
-    #6、指定需要过滤的字段
-    filterset_fields=['name','leader','tester']
-
-    #7、在某个视图中指定分页类
-    #pagination_class = PageNumberPaginationManual
-
-    def get(self, request):
-        #5、使用get_queryset获取查询集
-        project_qs = self.get_queryset()
-        #使用filter_queryset方法过滤查询集
-        project_qs=self.filter_queryset(project_qs)
-
-        #是用paginate_queryset来进行分页，然后返回分页之后的查询集
-        page=self.paginate_queryset(project_qs)
-        if page is not None:
-            serializer = self.get_serializer(instance=page, many=True)
-            #可以get_paginated_response方法返回
-            return self.get_paginated_response(serializer.data)
+    filterset_fields = ['name', 'leader', 'tester']
 
 
-        # 如果返回的是列表数据（多条数据）时，那么需要添加many=True这个参数
-        serializer = self.get_serializer(instance=project_qs, many=True)
-
-        #  JsonResponse第一个参数默认只能为dict字典,如果设为其他类型，需要将safe=False
-        return Response(serializer.data)
-
-    def post(self, request):
-        '''新增项目'''
-        json_data = request.body.decode('utf-8')
-        python_data = json.loads(json_data, encoding='utf-8')
-
-        serializer = ProjectModelSerializer(data=python_data)
-
-        try:
-            serializer.is_valid(raise_exception=True)
-        except Exception as e:
-            return JsonResponse(serializer.errors)
-
-        serializer.save()
-
-        # 3、将模型类对象转化为字典然后返回
-        # 序列化过程
-
-        return JsonResponse(serializer.data, status=201)
-
-
-# 需要继承GenericAPIView基类
-class ProjectDetail(GenericAPIView):
-    # 2、必须指定queryset和serializer_class
-    # queryset用于指定需要使用的查询集
+class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Projects.objects.all()
-    # serializer_class指定需要使用到的序列化器类
     serializer_class = ProjectModelSerializer
-
-    # 使用lookup_field类属性，可以修改主路由名称
-    # lookup_field = 'id'
-
-    # def get_object(self, pk):
-    #     try:
-    #         return Projects.objects.get(id=pk)
-    #     except Projects.DoesNotExist:
-    #         raise Http404
-
-    def get(self, request, pk):
-
-        # 3、无需自定义get_object方法
-        # 使用get_object方法，返回详情视图所需的模型对象
-        project = self.get_object()
-        # serializer = ProjectSerializer(instance=project)
-        # 使用get_serializer获取序列化器类
-        serializer = self.get_serializer(instance=project)
-        # 如果前端请求头中未指定acceept，那么默认返回josn格式数据
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, pk):
-        # 1、校验前端传递的pk（项目id）值，类型是否正确（正整数），在数据库中是否存在
-        # 2、获取ID为pk值的项目
-        project = self.get_object()
-
-        # 3、从前端获取json格式数据
-        json_data = request.body.decode('utf-8')
-        python_data = json.loads(json_data, encoding='utf-8')
-        serializer = self.get_serializer(instance=project, data=python_data)
-        try:
-            serializer.is_valid(raise_exception=True)
-        except Exception as e:
-            return Response(serializer.errors)
-        # 4、更新项目
-
-        # 在创建序列化器对象时，如果同时给instance和data传参
-        # 那么调用save（）方法，会自动化调用序列化器对象的updata方法
-        serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete(self, request, pk):
-        # 1、校验前端传递的pk（项目id）值，类型是否正确（正整数），在数据库中是否存在
-        # 2、获取ID为pk值的项目
-        project = self.get_object()
-        project.delete()
-        return Response(None, safe=False, status=204)
