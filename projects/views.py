@@ -272,11 +272,42 @@
 #         return Response(None, safe=False, status=204)
 
 
+# import json
+# from django.http import HttpResponse, JsonResponse, Http404
+# from django.views import View
+# from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework import status, filters
+# from rest_framework.generics import GenericAPIView
+# from rest_framework.response import Response
+# from rest_framework.views import APIView
+# from rest_framework import mixins
+#  from rest_framework import generics
+#
+# from projects.serializer import ProjectSerializer, ProjectModelSerializer
+#
+# from projects.models import Projects
+# from utils.pagination import PageNumberPaginationManual
+#
+#
+# # 1、首先继承mixins，然后继承GenericAPIView
+# class ProjectsList(generics.ListCreateAPIView):
+#     queryset = Projects.objects.all()
+#     serializer_class = ProjectModelSerializer
+#
+#     ordering_fields = ['name', 'leader']
+#     filterset_fields = ['name', 'leader', 'tester']
+#
+#
+# class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Projects.objects.all()
+#     serializer_class = ProjectModelSerializer
+
 import json
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, filters
+from rest_framework import filters
+from rest_framework import status, viewsets
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -290,14 +321,47 @@ from utils.pagination import PageNumberPaginationManual
 
 
 # 1、首先继承mixins，然后继承GenericAPIView
-class ProjectsList(generics.ListCreateAPIView):
+#viewsets不再支持get 、post、put、delete等请求方法、二只支持action动作
+#但是ViewSet未提供get_object、get_serializer等方法
+#所以需要继承GenericViewSet
+class ProjectViewSet(viewsets.GenericViewSet):
     queryset = Projects.objects.all()
     serializer_class = ProjectModelSerializer
 
     ordering_fields = ['name', 'leader']
     filterset_fields = ['name', 'leader', 'tester']
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
 
-class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Projects.objects.all()
-    serializer_class = ProjectModelSerializer
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+

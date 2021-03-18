@@ -25,8 +25,18 @@ urlpatterns = [
     # ：冒号左边为转化器，右边为参数别名
     # int、slug、uuid、
     # path('<int:pk>/',views.IndexView.as_view())
-    path('projects/', views.ProjectsList.as_view()),
-    path('projects/<int:pk>/', views.ProjectDetail.as_view()),
+    # path('projects/', views.ProjectsList.as_view()),
+    # path('projects/<int:pk>/', views.ProjectDetail.as_view()),
+    path('projects/',views.ProjectViewSet.as_view({
+        'get':'list',
+        'post':'create'
+
+    }),name='project-list'),
+    path('projects/<int:pk>/', views.ProjectViewSet.as_view({
+        'get':"retieve",
+        'put':'updata',
+        'delete':'destroy'
+    })),
 ]
 
 
